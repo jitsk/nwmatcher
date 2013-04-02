@@ -36,7 +36,7 @@
   Dom = exports,
 
   doc = global.document,
-  root = doc.documentElement,
+  root = ((typeof doc == 'object')?doc.documentElement:{}),,
 
   isSingleMatch,
   isSingleSelect,
