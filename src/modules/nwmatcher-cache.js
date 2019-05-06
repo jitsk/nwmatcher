@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2013 Diego Perini
+ * Copyright (C) 2007-2018 Diego Perini
  * All rights reserved.
  *
  * Caching/memoization module for NWMatcher
@@ -33,6 +33,9 @@
 
   context = global.document,
   root = context.documentElement,
+
+  // timing pauses
+  now = 0,
 
   // last time cache initialization was called
   lastCalled = 0,
@@ -71,7 +74,7 @@
         } else {
           // pause caching while we are getting
           // hammered by dom mutations (jdalton)
-          now = new global.Date;
+          now = (new Date).getTime();
           if ((now - lastCalled) < minCacheRest) {
             isPaused = isExpired = true;
             setTimeout(function() { isPaused = false; }, minCacheRest);

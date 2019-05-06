@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2013 Diego Perini
+ * Copyright (C) 2007-2018 Diego Perini
  * All rights reserved.
  *
  * CSS3 pseudo-classes extension for NWMatcher
@@ -90,93 +90,94 @@
 NW.Dom.registerSelector(
   'nwmatcher:spseudos',
   /^\:(root|empty|(?:first|last|only)(?:-child|-of-type)|nth(?:-last)?(?:-child|-of-type)\(\s*(even|odd|(?:[-+]{0,1}\d*n\s*)?[-+]{0,1}\s*\d*)\s*\))?(.*)/i,
-  function(match, source) {
+  (function(global) {
 
-  var a, n, b, status = true, test, type;
+    return function(match, source) {
 
-  switch (match[1]) {
+      var a, n, b, status = true, test, type;
 
-    case 'root':
-      if (match[3])
-        source = 'if(e===h||s.contains(h,e)){' + source + '}';
-      else
-        source = 'if(e===h){' + source + '}';
-      break;
+      switch (match[1]) {
 
-    case 'empty':
-      source = 'if(s.isEmpty(e)){' + source + '}';
-      break;
-
-    default:
-      if (match[1] && match[2]) {
-
-        if (match[2] == 'n') {
-          source = 'if(e!==h){' + source + '}';
+        case 'root':
+          if (match[3])
+            source = 'if(e===h||s.contains(h,e)){' + source + '}';
+          else
+            source = 'if(e===h){' + source + '}';
           break;
-        } else if (match[2] == 'even') {
-          a = 2;
-          b = 0;
-        } else if (match[2] == 'odd') {
-          a = 2;
-          b = 1;
-        } else {
-          b = ((n = match[2].match(/(-?\d+)$/)) ? parseInt(n[1], 10) : 0);
-          a = ((n = match[2].match(/(-?\d*)n/i)) ? parseInt(n[1], 10) : 0);
-          if (n && n[1] == '-') a = -1;
-        }
-        test = a > 1 ?
-          (/last/i.test(match[1])) ? '(n-(' + b + '))%' + a + '==0' :
-          'n>=' + b + '&&(n-(' + b + '))%' + a + '==0' : a < -1 ?
-          (/last/i.test(match[1])) ? '(n-(' + b + '))%' + a + '==0' :
-          'n<=' + b + '&&(n-(' + b + '))%' + a + '==0' : a=== 0 ?
-          'n==' + b :
-          (/last/i.test(match[1])) ?
-          a == -1 ? 'n>=' + b : 'n<=' + b :
-          a == -1 ? 'n<=' + b : 'n>=' + b;
-        source =
-          'if(e!==h){' +
-            'n=s[' + (/-of-type/i.test(match[1]) ? '"nthOfType"' : '"nthElement"') + ']' +
-              '(e,' + (/last/i.test(match[1]) ? 'true' : 'false') + ');' +
-            'if(' + test + '){' + source + '}' +
-          '}';
 
-      } else if (match[1]) {
+        case 'empty':
+          source = 'if(s.isEmpty(e)){' + source + '}';
+          break;
 
-        a = /first/i.test(match[1]) ? 'previous' : 'next';
-        n = /only/i.test(match[1]) ? 'previous' : 'next';
-        b = /first|last/i.test(match[1]);
-        type = /-of-type/i.test(match[1]) ? '&&n.nodeName!==e.nodeName' : '&&n.nodeName<"@"';
-        source = 'if(e!==h){' +
-          ( 'n=e;while((n=n.' + a + 'Sibling)' + type + ');if(!n){' + (b ? source :
-            'n=e;while((n=n.' + n + 'Sibling)' + type + ');if(!n){' + source + '}') + '}' ) + '}';
+        default:
+          if (match[1] && match[2]) {
 
-      } else {
+            if (match[2] == 'n') {
+              source = 'if(e!==h){' + source + '}';
+              break;
+            } else if (match[2] == 'even') {
+              a = 2;
+              b = 0;
+            } else if (match[2] == 'odd') {
+              a = 2;
+              b = 1;
+            } else {
+              b = ((n = match[2].match(/(-?\d+)$/)) ? parseInt(n[1], 10) : 0);
+              a = ((n = match[2].match(/(-?\d*)n/i)) ? parseInt(n[1], 10) : 0);
+              if (n && n[1] == '-') a = -1;
+            }
+            test = a > 1 ?
+              (/last/i.test(match[1])) ? '(n-(' + b + '))%' + a + '==0' :
+              'n>=' + b + '&&(n-(' + b + '))%' + a + '==0' : a < -1 ?
+              (/last/i.test(match[1])) ? '(n-(' + b + '))%' + a + '==0' :
+              'n<=' + b + '&&(n-(' + b + '))%' + a + '==0' : a === 0 ?
+              'n==' + b : a == -1 ? 'n<=' + b : 'n>=' + b;
+            source =
+              'if(e!==h){' +
+                'n=s[' + (/-of-type/i.test(match[1]) ? '"nthOfType"' : '"nthElement"') + ']' +
+                  '(e,' + (/last/i.test(match[1]) ? 'true' : 'false') + ');' +
+                'if(' + test + '){' + source + '}' +
+              '}';
 
-        status = false;
+          } else if (match[1]) {
 
+            a = /first/i.test(match[1]) ? 'previous' : 'next';
+            n = /only/i.test(match[1]) ? 'previous' : 'next';
+            b = /first|last/i.test(match[1]);
+            type = /-of-type/i.test(match[1]) ? '&&n.nodeName!==e.nodeName' : '&&n.nodeName<"@"';
+            source = 'if(e!==h){' +
+              ( 'n=e;while((n=n.' + a + 'Sibling)' + type + ');if(!n){' + (b ? source :
+                'n=e;while((n=n.' + n + 'Sibling)' + type + ');if(!n){' + source + '}') + '}' ) + '}';
+
+          } else {
+
+            status = false;
+
+          }
+          break;
       }
-      break;
-  }
 
-  return {
-    'source': source,
-    'status': status
-  };
+      return {
+        'source': source,
+        'status': status
+      };
 
-});
+    };
+
+  })(this));
 
 NW.Dom.registerSelector(
   'nwmatcher:dpseudos',
-  /^\:(link|visited|target|active|focus|hover|checked|disabled|enabled|selected|lang\(([-\w]{2,})\)|not\(([^()]*|.*)\))?(.*)/i,
+  /^\:(link|visited|target|active|focus|hover|checked|disabled|enabled|selected|lang\(([-\w]{2,})\)|not\(\s*(:nth(?:-last)?(?:-child|-of-type)\(\s*(?:even|odd|(?:[-+]{0,1}\d*n\s*)?[-+]{0,1}\s*\d*)\s*\)|[^()]*)\s*\))?(.*)/i,
   (function(global) {
 
     var doc = global.document,
     Config = NW.Dom.Config,
     Tokens = NW.Dom.Tokens,
 
-    reTrimSpace = global.RegExp('^\\s+|\\s+$', 'g'),
+    reTrimSpace = RegExp('^\\s+|\\s+$', 'g'),
 
-    reSimpleNot = global.RegExp('^((?!:not)' +
+    reSimpleNot = RegExp('^((?!:not)' +
       '(' + Tokens.prefixes + '|' + Tokens.identifier +
       '|\\([^()]*\\))+|\\[' + Tokens.attributes + '\\])$');
 
@@ -189,10 +190,10 @@ NW.Dom.registerSelector(
         case 'not':
           expr = match[3].replace(reTrimSpace, '');
           if (Config.SIMPLENOT && !reSimpleNot.test(expr)) {
-            NW.Dom.emit('Negation pseudo-class only accepts simple selectors "' + match.join('') + '"');
+            NW.Dom.emit('Negation pseudo-class only accepts simple selectors "' + selector + '"');
           } else {
             if ('compatMode' in doc) {
-              source = 'if(!' + NW.Dom.compile(expr, '', false) + '(e,s,r,d,h,g)){' + source + '}';
+              source = 'if(!' + NW.Dom.compile(expr, '', false) + '(e,s,d,h,g)){' + source + '}';
             } else {
               source = 'if(!s.match(e, "' + expr.replace(/\x22/g, '\\"') + '",g)){' + source +'}';
             }
@@ -228,10 +229,7 @@ NW.Dom.registerSelector(
           break;
 
         case 'target':
-          n = doc.location ? doc.location.hash : '';
-          if (n) {
-            source = 'if(e.id=="' + n.slice(1) + '"){' + source + '}';
-          }
+          source = 'if(e.id==d.location.hash.slice(1)){' + source + '}';
           break;
 
         case 'link':
@@ -252,12 +250,47 @@ NW.Dom.registerSelector(
 
         case 'focus':
           source = 'hasFocus' in doc ?
-            'if(e===d.activeElement&&d.hasFocus()&&(e.type||e.href||!isNaN(e.tabIndex))){' + source + '}' :
+            'if(e===d.activeElement&&d.hasFocus()&&(e.type||e.href||typeof e.tabIndex=="number")){' + source + '}' :
             'if(e===d.activeElement&&(e.type||e.href)){' + source + '}';
           break;
 
         case 'selected':
           source = 'if(/^option$/i.test(e.nodeName)&&(e.selected||e.checked)){' + source + '}';
+          break;
+
+        default:
+          status = false;
+          break;
+      }
+
+      return {
+        'source': source,
+        'status': status
+      };
+
+    };
+
+  })(this));
+
+NW.Dom.registerSelector(
+  'nwmatcher:epseudos',
+  /^((?:[:]{1,2}(?:after|before|first-letter|first-line))|(?:[:]{2,2}(?:selection|backdrop|placeholder)))?(.*)/i,
+  (function(global) {
+
+    return function(match, source) {
+
+      var status = true;
+
+      switch (match[1].match(/(\w+)$/)[0]) {
+
+        case 'after':
+        case 'before':
+        case 'first-letter':
+        case 'first-line':
+        case 'selection':
+        case 'backdrop':
+        case 'placeholder':
+          source = 'if(!(/1|11/).test(e.nodeType)){' + source + '}';
           break;
 
         default:
